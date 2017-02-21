@@ -8,7 +8,7 @@ namespace XamarinDroidTodoListApplication.Data
     [ContentProvider(new[] { "com.example.android.todolist" }, Exported = false)]
     public class TaskContentProvider : ContentProvider
     {
-        private TaskDbHelper taskDbHelper;
+        private TaskDbHelper taskDbHelper; 
 
         public override int Delete(AndroidNet.Uri uri, string selection, string[] selectionArgs)
         {
