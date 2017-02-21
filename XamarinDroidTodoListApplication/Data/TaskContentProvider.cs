@@ -3,8 +3,9 @@ namespace XamarinDroidTodoListApplication.Data
     using System;
     using Android.Content;
     using Android.Database;
-    using AndroidNet = Android.Net; 
+    using AndroidNet = Android.Net;
 
+    [ContentProvider(new[] { "com.example.android.todolist" }, Exported = false)]
     public class TaskContentProvider : ContentProvider
     {
         private TaskDbHelper taskDbHelper;

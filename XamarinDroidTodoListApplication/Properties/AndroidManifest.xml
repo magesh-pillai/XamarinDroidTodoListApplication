@@ -1,5 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="XamarinDroidTodoListApplication.XamarinDroidTodoListApplication" android:versionCode="1" android:versionName="1.0" android:installLocation="auto">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+          package="XamarinDroidTodoListApplication.XamarinDroidTodoListApplication" 
+          android:versionCode="1" 
+          android:versionName="1.0" android:installLocation="auto">
 	<uses-sdk android:minSdkVersion="19" />
-	<application android:label="XamarinDroidTodoListApplication" android:icon="@drawable/Icon" android:theme="@style/AppTheme"></application>
+	<application 
+    android:label="XamarinDroidTodoListApplication" 
+    android:icon="@drawable/Icon" 
+    android:theme="@style/AppTheme">
+    android:allowBackup="false"
+    android.supportsRt1="true"
+    tools:ignore="GoogleAppIndexingWarning"
+  </application>
 </manifest>

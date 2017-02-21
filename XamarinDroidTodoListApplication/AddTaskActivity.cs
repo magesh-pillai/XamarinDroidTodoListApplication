@@ -28,7 +28,7 @@ namespace XamarinDroidTodoListApplication
         public void OnClickAddTask(View view)
         {
             // Not yet implemented
-        }
+        } 
 
         [Export("OnPrioritySelected")]
         public void OnPrioritySelected(View view)
