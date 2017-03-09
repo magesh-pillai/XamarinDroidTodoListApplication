@@ -26,18 +26,76 @@ namespace XamarinDroidTodoListApplication.Data
         {
             UriMatcher uriMatcher = new UriMatcher(UriMatcher.NoMatch);
             uriMatcher.AddURI(TaskContract.AUTHORITY, TaskContract.PATH_TASKS, TASKS);
-            uriMatcher.AddURI(TaskContract.AUTHORITY, TaskContract.PATH_TASKS + "/#", TASKS);
+            uriMatcher.AddURI(TaskContract.AUTHORITY, TaskContract.PATH_TASKS + "/#", TASK_WITH_ID);
             return uriMatcher;
         }
 
         public override int Delete(AndroidNet.Uri uri, string selection, string[] selectionArgs)
         {
-            throw new NotImplementedException();
+            SQLiteDatabase db = this.taskDbHelper.WritableDatabase;
+
+            int match = sUriMatcher.Match(uri);
+
+            int deleted = 0;
+
+            switch (match)
+            {
+                case TASKS:
+                    {
+                        // Dangerous
+                        deleted = db.Delete(TaskContract.TaskEntry.TABLE_NAME,
+                            null,
+                            null);
+                        break;
+                    }
+                case TASK_WITH_ID:
+                    {
+                        // Get the id from the URI
+                        string id = uri.PathSegments[1];
+
+                        // Selection is the _ID column = ?
+                        // SelectionArgs is the arg values
+                        string mDeletion = TaskContract.TaskEntry.ID + " = ?";
+                        string[] mDeletionArgs = new string[] { id };
+
+                        deleted = db.Delete(TaskContract.TaskEntry.TABLE_NAME,
+                            mDeletion,
+                            mDeletionArgs);
+
+                        break;
+                    }
+                default:
+                    {
+                        throw new InvalidOperationException("Unknown uri: " + uri);
+                    }
+            }
+
+            this.Context.ContentResolver.NotifyChange(uri, null);
+
+            return deleted;
         }
 
         public override string GetType(AndroidNet.Uri uri)
         {
-            throw new NotImplementedException();
+            int match = sUriMatcher.Match(uri);
+
+            switch (match)
+            {
+                case TASKS:
+                    {
+                        // directory
+                        return "vnd.android.cursor.dir" + "/" + TaskContract.AUTHORITY + "/" + TaskContract.PATH_TASKS;
+                    }
+                case TASK_WITH_ID:
+                    {
+                        // single item type
+                        return "vnd.android.cursor.item" + "/" + TaskContract.AUTHORITY + "/" + TaskContract.PATH_TASKS;
+                    }
+                default:
+                    {
+                        throw new InvalidOperationException("Unknown uri: " + uri);
+                    }
+            }
         }
 
         public override AndroidNet.Uri Insert(AndroidNet.Uri uri, ContentValues values)
@@ -83,12 +141,80 @@ namespace XamarinDroidTodoListApplication.Data
 
         public override ICursor Query(AndroidNet.Uri uri, string[] projection, string selection, string[] selectionArgs, string sortOrder)
         {
-            throw new NotImplementedException();
+            SQLiteDatabase db = this.taskDbHelper.ReadableDatabase;
+
+            int match = sUriMatcher.Match(uri);
+
+            ICursor retCursor;
+
+            switch (match)
+            {
+                case TASKS:
+                    {
+                        retCursor = db.Query(TaskContract.TaskEntry.TABLE_NAME,
+                            projection,
+                            selection,
+                            selectionArgs,
+                            null,
+                            null,
+                            sortOrder);
+                        break;
+                    }
+                case TASK_WITH_ID:
+                    {
+                        // Get the id from the URI
+                        string id = uri.PathSegments[1];
+
+                        // Selection is the _ID column = ?
+                        // SelectionArgs is the arg values
+                        string mSelection = TaskContract.TaskEntry.ID + " = ?";
+                        string[] mSelectionArgs = new string[] { id };
+
+                        retCursor = db.Query(TaskContract.TaskEntry.TABLE_NAME,
+                            projection,
+                            mSelection,
+                            mSelectionArgs,
+                            null,
+                            null,
+                            sortOrder);
+
+                        break;
+                    }
+                default:
+                    {
+                        throw new InvalidOperationException("Unknown uri: " + uri);
+                    }
+            }
+
+            retCursor.SetNotificationUri(this.Context.ContentResolver, uri);
+
+            return retCursor;
         }
 
         public override int Update(AndroidNet.Uri uri, ContentValues values, string selection, string[] selectionArgs)
         {
-            throw new NotImplementedException();
+            int tasksUpdated;
+
+            int match = sUriMatcher.Match(uri);
+
+            switch (match)
+            {
+                case TASK_WITH_ID:
+                    {
+                        string id = uri.PathSegments[1];
+                        tasksUpdated = this.taskDbHelper.WritableDatabase.Update(TaskContract.TaskEntry.TABLE_NAME,
+                            values,
+                            TaskContract.TaskEntry.ID + " = ?",
+                            new string[] { id });
+                        break;
+                    }
+                default:
+                    {
+                        throw new InvalidOperationException("Unknown uri: " + uri);
+                    }
+            }
+
+            return tasksUpdated;
         }
     }
 }

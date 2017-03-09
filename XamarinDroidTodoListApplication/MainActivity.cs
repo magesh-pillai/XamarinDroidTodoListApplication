@@ -8,16 +8,31 @@
     using Android.Support.V7.App;
     using Android.Support.V7.Widget;
     using Android.Support.V7.Widget.Helper;
+    using Android.Util;
+    using Data;
     using System;
 
     [Activity(Label = "XamarinDroidTodoListApplication", MainLauncher = true, Icon = "@mipmap/ic_launcher")]
     public class MainActivity : AppCompatActivity, LoaderManager.ILoaderCallbacks
     {
-        private string TAG = typeof(MainActivity).Name;
-        private const int TASK_LOADER_ID = 0;
-
         private CustomCursorAdapter adapter;
         private RecyclerView recyclerView;
+
+        internal static int TASK_LOADER_ID
+        {
+            get
+            {
+                return 0;
+            }
+        }
+
+        internal static string TAG
+        {
+            get
+            {
+                return typeof(MainActivity).Name;
+            }
+        }
 
         protected override void OnCreate(Bundle bundle)
         {
@@ -36,7 +51,7 @@
             this.recyclerView.SetAdapter(this.adapter);
 
             // Add a touch helper to the recycler view for user swipe deletion
-            (new ItemTouchHelper(new TouchHelperImpl())).AttachToRecyclerView(this.recyclerView);
+            (new ItemTouchHelper(new TouchHelperImpl(this))).AttachToRecyclerView(this.recyclerView);
 
             // Add listener to the floating action button
             FloatingActionButton fltButton = this.FindViewById<FloatingActionButton>(Resource.Id.fab);
@@ -76,8 +91,11 @@
 
     internal class TouchHelperImpl : ItemTouchHelper.SimpleCallback
     {
-        internal TouchHelperImpl() : base(0, ItemTouchHelper.Left | ItemTouchHelper.Right)
+        Activity activity;
+
+        internal TouchHelperImpl(Activity actv) : base(0, ItemTouchHelper.Left | ItemTouchHelper.Right)
         {
+            this.activity = actv;
         }
 
         public override bool OnMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target)
@@ -87,7 +105,13 @@
 
         public override void OnSwiped(RecyclerView.ViewHolder viewHolder, int direction)
         {
-            throw new NotImplementedException();
+            long id = (long)viewHolder.ItemView.Tag;
+
+            Android.Net.Uri uri = TaskContract.TaskEntry.CONTENT_URI;
+            uri = uri.BuildUpon().AppendPath(id + "").Build();
+
+            this.activity.ContentResolver.Delete(uri, null, null);
+            this.activity.LoaderManager.RestartLoader(MainActivity.TASK_LOADER_ID, null, (LoaderManager.ILoaderCallbacks)this.activity);
         }
     }
 
@@ -108,6 +132,10 @@
             {
                 this.DeliverResult(data);
             }
+            else
+            {
+                this.ForceLoad();
+            }
         }
 
         internal void DeliverResult(ICursor cursor)
@@ -118,7 +146,19 @@
 
         public override Java.Lang.Object LoadInBackground()
         {
-            return null;
+            try
+            {
+                return (Java.Lang.Object)this.Context.ContentResolver.Query(TaskContract.TaskEntry.CONTENT_URI,
+                    null,
+                    null,
+                    null,
+                    TaskContract.TaskEntry.COLUMN_PRIORITY);
+            }
+            catch (Exception e)
+            {
+                Log.Error(MainActivity.TAG, "Failed to asynchronously load data.\n" + e.StackTrace);
+                return null;
+            }
         }
     }
 }
