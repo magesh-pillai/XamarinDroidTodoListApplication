@@ -1,10 +1,12 @@
 namespace XamarinDroidTodoListApplication
 {
     using Android.App;
+    using Android.Content;
     using Android.OS;
     using Android.Support.V7.App;
     using Android.Views;
     using Android.Widget;
+    using Data;
     using Java.Interop;
 
     [Activity(Label = "AddTaskActivity")]
@@ -27,7 +29,24 @@ namespace XamarinDroidTodoListApplication
         [Export("OnClickAddTask")]
         public void OnClickAddTask(View view)
         {
-            // Not yet implemented
+            string input = this.FindViewById<EditText>(Resource.Id.editTextTaskDescription).Text;
+            if (string.IsNullOrEmpty(input))
+            {
+                return;
+            }
+
+            ContentValues contentValues = new ContentValues();
+            contentValues.Put(TaskContract.TaskEntry.COLUMN_DESCRIPTION, input);
+            contentValues.Put(TaskContract.TaskEntry.COLUMN_PRIORITY, this.priority);
+
+            Android.Net.Uri uri = this.ContentResolver.Insert(TaskContract.TaskEntry.CONTENT_URI, contentValues);
+
+            if (uri != null)
+            {
+                Toast.MakeText(this.BaseContext, uri.ToString(), ToastLength.Long).Show();
+            }
+
+            Finish();
         } 
 
         [Export("OnPrioritySelected")]

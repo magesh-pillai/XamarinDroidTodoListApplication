@@ -1,18 +1,14 @@
 ﻿namespace XamarinDroidTodoListApplication
 {
-    using System;
     using Android.App;
     using Android.Content;
-    using Android.Runtime;
-    using Android.Views;
-    using Android.Widget;
+    using Android.Database;
     using Android.OS;
+    using Android.Support.Design.Widget;
     using Android.Support.V7.App;
-    using Java.Lang;
     using Android.Support.V7.Widget;
     using Android.Support.V7.Widget.Helper;
-    using Android.Support.Design.Widget;
-    using Android.Database;
+    using System;
 
     [Activity(Label = "XamarinDroidTodoListApplication", MainLauncher = true, Icon = "@mipmap/ic_launcher")]
     public class MainActivity : AppCompatActivity, LoaderManager.ILoaderCallbacks
